@@ -5,9 +5,9 @@ use std::process::Command;
 #[macro_use]
 extern crate rocket;
 
-#[get("/cowsay/<input>/<animal>")]
-fn cowsay_animal(input: &str, animal: &str) -> String {
-    let cowsay_output = Command::new("cowsay").args(["-f", animal, input]).output();
+#[get("/cowsay/<input>/<kind>")]
+fn cowsay_animal(input: &str, kind: &str) -> String {
+    let cowsay_output = Command::new("cowsay").args(["-f", kind, input]).output();
 
     let response = match cowsay_output {
         Ok(out) => {
