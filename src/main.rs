@@ -5,9 +5,11 @@ use std::process::Command;
 #[macro_use]
 extern crate rocket;
 
+const COWSAY_PATH: &str = "/usr/games/cowsay";
+
 #[get("/<input>/<kind>")]
 fn cowsay_animal(input: &str, kind: &str) -> String {
-    let cowsay_output = Command::new("cowsay").args(["-f", kind, input]).output();
+    let cowsay_output = Command::new(COWSAY_PATH).args(["-f", kind, input]).output();
 
     let response = match cowsay_output {
         Ok(out) => {
@@ -31,7 +33,7 @@ fn cowsay_animal(input: &str, kind: &str) -> String {
 
 #[get("/<input>")]
 fn cowsay(input: &str) -> String {
-    let cowsay_output = Command::new("cowsay").arg(input).output();
+    let cowsay_output = Command::new(COWSAY_PATH).arg(input).output();
 
     let response = match cowsay_output {
         Ok(out) => out.stdout,
@@ -45,12 +47,34 @@ fn cowsay(input: &str) -> String {
     }
 }
 
+#[get("/kinds")]
+fn kinds() -> String {
+    match Command::new(COWSAY_PATH).arg("-l").output() {
+        Ok(out) => match std::str::from_utf8(&out.stdout) {
+            Ok(conv) => cowsay(conv),
+            Err(err) => err.to_string(),
+        },
+        Err(err) => err.to_string(),
+    }
+}
+
+#[get("/help")]
+fn help() -> String {
+    cowsay(
+        r#"/<input>/ -> cowsay <input>
+        /<input>/<kind>/ -> cowsay -f <kind> <input>
+        /help/ -> list these endpoints
+        /kinds/ -> cowsay -l"#,
+    )
+}
+
 #[get("/")]
 fn index() -> String {
-    cowsay("Hello World!")
+    cowsay("Hello World!\n\ngoto /help/ for help\n\ngoto /kinds/ to show kinds")
 }
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, cowsay, cowsay_animal])
+    let routes = routes![index, cowsay, cowsay_animal, help, kinds];
+    rocket::build().mount("/", routes)
 }

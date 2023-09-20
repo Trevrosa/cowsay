@@ -2,6 +2,10 @@
 host an api for the linux command `cowsay` on port 8000
 
 # endpoints
-/\<input\>/ -> `cowsay "input"`
+/\<input\>/ -> `cowsay <input>`
 
-/\<input\>/\<kind\>/ -> `cowsay -f "kind" "input"`
+/\<input\>/\<kind\>/ -> `cowsay -f <kind> <input>`
+
+/help/ -> list these endpoints
+
+/kinds/ -> `cowsay -l`
