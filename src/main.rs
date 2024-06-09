@@ -1,9 +1,7 @@
-#![allow(clippy::no_effect_underscore_binding)]
+#![warn(clippy::pedantic)]
 
-use std::process::Command;
-
-#[macro_use]
-extern crate rocket;
+use rocket::{get, launch, routes};
+use std::{path::Path, process::Command};
 
 const COWSAY_PATH: &str = "/usr/games/cowsay";
 
@@ -61,20 +59,28 @@ fn kinds() -> String {
 #[get("/help")]
 fn help() -> String {
     cowsay(
-        r#"/<input>/ -> cowsay <input>
+        r"/<input>/ -> cowsay <input>
         /<input>/<kind>/ -> cowsay -f <kind> <input>
         /help/ -> list these endpoints
-        /kinds/ -> cowsay -l"#,
+        /kinds/ -> cowsay -l",
     )
 }
 
 #[get("/")]
 fn index() -> String {
-    cowsay("Hello World!\n\ngoto /help/ for help\n\ngoto /kinds/ to show kinds")
+    cowsay(
+        r"Hello World!
+        
+        goto /help/ for help
+        
+        goto /kinds/ to show kinds",
+    )
 }
 
 #[launch]
 fn rocket() -> _ {
+    assert!(Path::new(COWSAY_PATH).exists());
+
     let routes = routes![index, cowsay, cowsay_animal, help, kinds];
     rocket::build().mount("/", routes)
 }
